@@ -23,7 +23,7 @@
     };
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        for(let mutation of mutationsList) {
+        for (let mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 startModify();
                 break;
@@ -36,30 +36,36 @@
     function startModify() {
         let ADlist = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
         let ADlist2 = document.getElementsByClassName('c-gap-left');
-        console.log(ADlist);
-        console.log(ADlist2);
-        for (let ad of ADlist) {
-            let node = ad;
-            while (node.id !== 'content_left') {
-                if (node) {
-                    if (node.className.includes('c-container')) {
-                        node.remove();
-                        break;
-                    } else {
-                        node = node.parentNode;
+
+        if (ADlist.length) {
+            console.log(ADlist);
+            for (let ad of ADlist) {
+                let node = ad;
+                while (node.id !== 'content_left') {
+                    if (node) {
+                        if (node.className.includes('c-container')) {
+                            node.remove();
+                            break;
+                        } else {
+                            node = node.parentNode;
+                        }
                     }
                 }
             }
         }
-        for (let ad of ADlist2) {
-            let node = ad;
-            while (node.id !== 'content_left') {
-                if (node) {
-                    if (node.className.includes('c-container')) {
-                        node.remove();
-                        break;
-                    } else {
-                        node = node.parentNode;
+
+        if (ADlist2.length) {
+            for (let ad of ADlist2) {
+                console.log(ADlist2);
+                let node = ad;
+                while (node.id !== 'content_left') {
+                    if (node) {
+                        if (node.className.includes('c-container')) {
+                            node.remove();
+                            break;
+                        } else {
+                            node = node.parentNode;
+                        }
                     }
                 }
             }
