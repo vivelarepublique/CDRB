@@ -13,13 +13,17 @@
     'use strict';
 
     // Your code here...
-
-    console.log('hi');
-    startModify();
+    if (!document.getElementById('su')) {
+        let searchButton = document.getElementById('su');
+        searchButton.addEventListener('click', () => {
+            startModify();
+        });
+    }
 
     function startModify() {
+        console.log('hi');
         let ADlist = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
-        let ADlist2 = document.getElementsByClassName('m c-gap-left');
+        let ADlist2 = document.getElementsByClassName('c-gap-left');
         console.log(ADlist);
         console.log(ADlist2);
         for (let ad of ADlist) {
