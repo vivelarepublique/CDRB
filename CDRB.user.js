@@ -13,15 +13,27 @@
     'use strict';
 
     // Your code here...
-    if (!document.getElementById('su')) {
-        let searchButton = document.getElementById('su');
-        searchButton.addEventListener('click', () => {
-            startModify();
-        });
-    }
+
+    const targetNode = document.getElementById('wrapper');
+
+    const config = {
+        attributes: false,
+        childList: true,
+        subtree: true,
+    };
+
+    const observer = new MutationObserver((mutationsList, observer) => {
+        for(let mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                startModify();
+                break;
+            }
+        }
+    });
+
+    observer.observe(targetNode, config);
 
     function startModify() {
-        console.log('hi');
         let ADlist = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
         let ADlist2 = document.getElementsByClassName('c-gap-left');
         console.log(ADlist);
@@ -32,7 +44,6 @@
                 if (node) {
                     if (node.className.includes('c-container')) {
                         node.remove();
-                        console.log('!~1');
                         break;
                     } else {
                         node = node.parentNode;
@@ -46,7 +57,6 @@
                 if (node) {
                     if (node.className.includes('c-container')) {
                         node.remove();
-                        console.log('!~2');
                         break;
                     } else {
                         node = node.parentNode;
