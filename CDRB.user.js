@@ -4,6 +4,7 @@
 // @version      1.1
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
+// @match        http://www.baidu.com/*
 // @match        https://www.baidu.com/*
 // @run-at       document-end
 // @grant        none
