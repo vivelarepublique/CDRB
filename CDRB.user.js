@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
 // @match        https://www.baidu.com/*
-// @run-at       document-end
+// @run-at       document-body
 // @grant        none
 // ==/UserScript==
 
