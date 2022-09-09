@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.5
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
@@ -60,16 +60,16 @@
     }
 
     function startModify() {
-        let ADlist = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
-        let ADlist2 = document.getElementsByClassName('c-gap-left');
+        let generalAdList = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
+        let topAdList = document.getElementsByClassName('c-gap-left');
 
-        if (ADlist.length) {
-            for (let ad of ADlist) {
+        if (generalAdList.length) {
+            for (let ad of generalAdList) {
                 let node = ad;
                 while (node && node.id !== 'content_left') {
                     if (node) {
                         if (node.className?.includes('c-container')) {
-                            console.log('移除了一个广告：', ad.parentNode?.parentNode?.innerText);
+                            console.log('移除了一个常规广告：', ad.parentNode?.parentNode?.innerText);
                             node.remove();
                             break;
                         } else {
@@ -80,13 +80,13 @@
             }
         }
 
-        if (ADlist2.length) {
-            for (let ad of ADlist2) {
+        if (topAdList.length) {
+            for (let ad of topAdList) {
                 let node = ad;
                 while (node && node.id !== 'content_left') {
                     if (node) {
                         if (node.className?.includes('c-container')) {
-                            console.log('移除了一个广告：', ad.parentNode?.parentNode?.innerText);
+                            console.log('移除了一个顶部广告：', ad.parentNode?.parentNode?.innerText);
                             node.remove();
                             break;
                         } else {
