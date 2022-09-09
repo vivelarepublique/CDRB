@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
@@ -22,24 +22,42 @@
         '脚本之家',
     ];
 
-    const targetNode = document.getElementById('wrapper');
-
     const config = {
         attributes: false,
         childList: true,
         subtree: true,
     };
 
-    const observer = new MutationObserver((mutationsList, observer) => {
-        for (let mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                startModify();
-                break;
+    (function begin() {
+        if (!readPage()) {
+            return new Promise(resolve => {
+                setTimeout(async () => {
+                    begin();
+                    resolve();
+                }, 200);
+            });
+        } else {
+            let targetNode = readPage();
+            try {
+                const observer = new MutationObserver(mutationsList => {
+                    for (let mutation of mutationsList) {
+                        if (mutation.type === 'childList') {
+                            startModify();
+                            break;
+                        }
+                    }
+                });
+
+                observer.observe(targetNode, config);
+            } catch (error) {
+                console.warn(error);
             }
         }
-    });
+    })();
 
-    observer.observe(targetNode, config);
+    function readPage() {
+        return document.getElementById('wrapper');
+    }
 
     function startModify() {
         let ADlist = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
