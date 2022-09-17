@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
@@ -20,6 +20,7 @@
         //！！！注意：不含""双引号，但是包含''单引号，而且,英文逗号不能省略！！！
         //↓请将光标放在此段末尾（最后一个向下箭头的后面），然后按下回车，在此行下面一行进行添加↓
         '脚本之家',
+        '华军软件园'
     ];
 
     const config = {
@@ -60,6 +61,7 @@
     }
 
     function startModify() {
+        //AD
         let generalAdList = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
         let topAdList = document.getElementsByClassName('c-gap-left');
 
@@ -97,6 +99,7 @@
             }
         }
 
+        // keywords
         let linkList = document.getElementsByTagName('a');
         let spanList = document.getElementsByClassName('c-color-gray item-site-name_3aKAy');
         let searchingValue = document.getElementById('kw')?.value;
@@ -140,6 +143,26 @@
                             }
                         }
                         break;
+                    }
+                }
+            }
+        }
+
+        //downloadLink
+        let safeDownload = document.getElementsByClassName('c-btn c-btn-primary OP_LOG_BTN pc-js-btn_n7kWx pc-tabs-content-long-btn_3Deg2');
+
+        if (safeDownload.length) {
+            for (let link of safeDownload) {
+                let node = link;
+                while (node && node.id !== 'content_left') {
+                    if (node) {
+                        if (node.className?.includes('c-container')) {
+                            console.log('移除了一个所谓的安全下载：', node.getAttribute('mu')?.match(/https?:\/\/\w+\.\w+\.\w+\/.+\.html?/g)[0]);
+                            node.remove();
+                            break;
+                        } else {
+                            node = node.parentNode;
+                        }
                     }
                 }
             }
