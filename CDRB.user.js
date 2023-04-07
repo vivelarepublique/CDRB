@@ -1,17 +1,20 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.7
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
 // @match        https://www.baidu.com/*
+// @downloadURL  https://github.com/vivelarepublique/CDRB/raw/master/CDRB.user.js
+// @updateURL    https://github.com/vivelarepublique/CDRB/raw/master/CDRB.user.js
 // @run-at       document-body
 // @grant        none
 // ==/UserScript==
 
 (function () {
     'use strict';
+    console.log('%cCDRB%c1.7', 'padding: 3px; color: #fff; background: #00918a', 'padding: 3px; color: #fff; background: #002167');
 
     const otherResult = [
         'CSDN',
@@ -20,26 +23,21 @@
         //！！！注意：不含""双引号，但是包含''单引号，而且,英文逗号不能省略！！！
         //↓请将光标放在此段末尾（最后一个向下箭头的后面），然后按下回车，在此行下面一行进行添加↓
         '脚本之家',
-        '华军软件园'
+        '华军软件园',
     ];
 
-    const config = {
-        attributes: false,
-        childList: true,
-        subtree: true,
-    };
+    const delay = 500;
+    const maxTimes = 21;
+    let times = 0;
 
-    (function begin() {
-        if (!readPage()) {
-            return new Promise(resolve => {
-                setTimeout(async () => {
-                    begin();
-                    resolve();
-                }, 200);
-            });
-        } else {
-            let targetNode = readPage();
-            try {
+    begin();
+
+    function begin() {
+        const id = setInterval(() => {
+            const target = document.querySelector('#wrapper');
+            times++;
+            if (target) {
+                clearInterval(id);
                 const observer = new MutationObserver(mutationsList => {
                     for (let mutation of mutationsList) {
                         if (mutation.type === 'childList') {
@@ -49,15 +47,15 @@
                     }
                 });
 
-                observer.observe(targetNode, config);
-            } catch (error) {
-                console.warn(error);
+                observer.observe(target, {
+                    attributes: false,
+                    childList: true,
+                    subtree: true,
+                });
+            } else if (times === maxTimes) {
+                clearInterval(id);
             }
-        }
-    })();
-
-    function readPage() {
-        return document.getElementById('wrapper');
+        }, delay);
     }
 
     function startModify() {
