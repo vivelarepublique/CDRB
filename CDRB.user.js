@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CDRB
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.8
 // @description  Code Doesn't Require BAIDU.
 // @author       vivelarepublique
 // @match        http://www.baidu.com/*
@@ -14,7 +14,7 @@
 
 (function () {
     'use strict';
-    console.log('%cCDRB%c1.7', 'padding: 3px; color: #fff; background: #00918a', 'padding: 3px; color: #fff; background: #002167');
+    console.log('%cCDRB%c1.8', 'padding: 3px; color: #fff; background: #00918a', 'padding: 3px; color: #fff; background: #002167');
 
     const otherResult = [
         'CSDN',
@@ -30,25 +30,19 @@
     const maxTimes = 21;
     let times = 0;
 
-    begin();
+    entry();
 
-    function begin() {
+    function entry() {
         const id = setInterval(() => {
-            const target = document.querySelector('#wrapper');
+            const target = document.querySelector('div#wrapper_wrapper');
             times++;
             if (target) {
                 clearInterval(id);
-                const observer = new MutationObserver(mutationsList => {
-                    for (let mutation of mutationsList) {
-                        if (mutation.type === 'childList') {
-                            startModify();
-                            break;
-                        }
-                    }
-                });
+                const observer = new MutationObserver(() => filterAdsAndRemove());
 
                 observer.observe(target, {
                     attributes: false,
+                    characterData: false,
                     childList: true,
                     subtree: true,
                 });
@@ -58,10 +52,10 @@
         }, delay);
     }
 
-    function startModify() {
+    function filterAdsAndRemove() {
         //AD
-        let generalAdList = document.getElementsByClassName('ec-tuiguang ecfc-tuiguang _2awtgst');
-        let topAdList = document.getElementsByClassName('c-gap-left');
+        const generalAdList = document.querySelectorAll('span.ec-tuiguang.ecfc-tuiguang._2awtgst');
+        const topAdList = document.querySelectorAll('a.c-gap-left');
 
         if (generalAdList.length) {
             for (let ad of generalAdList) {
@@ -98,9 +92,9 @@
         }
 
         // keywords
-        let linkList = document.getElementsByTagName('a');
-        let spanList = document.getElementsByClassName('c-color-gray item-site-name_3aKAy');
-        let searchingValue = document.getElementById('kw')?.value;
+        const linkList = document.querySelectorAll('a');
+        const spanList = document.querySelectorAll('span.c-color-gray.c-gap-left-xsmall');
+        const searchingValue = document.querySelector('#kw')?.value;
 
         if (linkList.length) {
             for (let link of linkList) {
@@ -129,7 +123,7 @@
                 let node = span;
                 for (let other of otherResult) {
                     if (span.innerHTML.includes(other) && !searchingValue?.includes(other)) {
-                        while (node && node.id !== 't c-line-clamp1') {
+                        while (node && !node.className?.includes('t c-line-clamp1')) {
                             if (node) {
                                 if (node.className?.includes('c-gap-bottom-small')) {
                                     console.log('移除了一个关键词：', other);
@@ -147,7 +141,7 @@
         }
 
         //downloadLink
-        let safeDownload = document.getElementsByClassName('c-btn c-btn-primary OP_LOG_BTN pc-js-btn_n7kWx pc-tabs-content-long-btn_3Deg2');
+        const safeDownload = document.querySelectorAll('span.c-btn.c-btn-primary.OP_LOG_BTN');
 
         if (safeDownload.length) {
             for (let link of safeDownload) {
@@ -155,7 +149,30 @@
                 while (node && node.id !== 'content_left') {
                     if (node) {
                         if (node.className?.includes('c-container')) {
-                            console.log('移除了一个所谓的安全下载：', node.getAttribute('mu')?.match(/https?:\/\/\w+\.\w+\.\w+\/.+\.html?/g)[0]);
+                            console.log('移除了一个所谓的安全下载：', node.getAttribute('mu')?.match(/https?:\/\/.*/)?.[0]);
+                            node.remove();
+                            break;
+                        } else {
+                            node = node.parentNode;
+                        }
+                    }
+                }
+            }
+        }
+
+        //IT training institutions
+        const trainingInstitutions = document.querySelectorAll('div.c-link.c-line-clamp1.c-font-medium.c-gap-top-mini');
+
+        if (trainingInstitutions.length) {
+            for (let institution of trainingInstitutions) {
+                let node = institution;
+                while (node && node.id !== 'content_left') {
+                    if (node) {
+                        if (node.className?.includes('c-container')) {
+                            console.log(
+                                '移除了一些IT培训机构广告：',
+                                Array.from(trainingInstitutions).reduce((acc, cur) => acc + ' ' + cur.innerHTML, '')
+                            );
                             node.remove();
                             break;
                         } else {
