@@ -42,37 +42,28 @@ const getElement = (selector) => {
 const getMultiElement = (selector) => {
     return document.querySelectorAll(selector);
 };
-const listeningForChangesInTarget = (target, action, options, valueOfConcern, immediate) => {
-    if (immediate) {
-        if (typeof immediate === 'object') {
-            const { delay, way } = immediate;
-            if (way === 'debounce') {
-                debounce(action, delay);
-            }
-            else if (way === 'throttle') {
-                throttle(action, delay);
-            }
-        }
-        else {
-            action();
-        }
-    }
+const listeningForChangesInTarget = (target, action, options, valueOfConcern, immediate, triggerLimitation) => {
+    const { delay, way } = triggerLimitation || { way: 'none', delay: 0 };
+    const finalAction = way === 'debounce' ? debounce(action, delay) : way === 'throttle' ? throttle(action, delay) : action;
     const targetElement = target instanceof Element ? target : getElement(target);
-    if (targetElement) {
-        const targetObserver = new MutationObserver(mutations => {
-            const mutation = mutations.find(el => el.target === targetElement);
-            if (mutation) {
-                const element = mutation.target;
-                if (valueOfConcern && valueOfConcern in element) {
-                    action(element[valueOfConcern]);
-                }
-                else {
-                    action();
-                }
-            }
-        });
-        targetObserver.observe(targetElement, { childList: true, characterData: true, subtree: true, attributes: true, ...options });
+    if (!targetElement)
+        return;
+    if (immediate) {
+        valueOfConcern ? finalAction(targetElement[valueOfConcern]) : finalAction();
     }
+    const targetObserver = new MutationObserver(mutations => {
+        const mutation = mutations.find(el => el.target === targetElement);
+        if (mutation) {
+            const element = mutation.target;
+            if (valueOfConcern && valueOfConcern in element) {
+                finalAction(element[valueOfConcern]);
+            }
+            else {
+                finalAction();
+            }
+        }
+    });
+    targetObserver.observe(targetElement, { childList: true, characterData: true, subtree: true, attributes: true, ...options });
 };
 const waitForTargetFinishLoading = (target) => {
     return new Promise(resolve => {
