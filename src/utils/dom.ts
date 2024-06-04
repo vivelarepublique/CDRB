@@ -1,21 +1,25 @@
-type ActionFunction = (value?: string) => void;
-
-interface MutationsOptions {
-    childList?: boolean;
-    characterData?: boolean;
-    subtree?: boolean;
-    attributes?: boolean;
-}
-
 interface RealElement extends Element {
     [key: string]: any;
 }
 
-type DelayWay = 'debounce' | 'throttle' | 'none';
-
-interface DelayOptions {
-    delay: number;
-    way: DelayWay;
+interface ListenOptions {
+    callback?: (...args: any[]) => any;
+    attributesConcern?: string;
+    childrenConcern?: {
+        action: (...args: any[]) => any;
+        target: string;
+    }[];
+    noTarget?: boolean;
+    immediateImplementation?: boolean;
+    triggerLimitation?: {
+        delay: number;
+        way: 'debounce' | 'throttle' | 'none';
+    };
+    manualSetupOptions?: {
+        childList?: boolean;
+        subtree?: boolean;
+        attributes?: boolean;
+    };
 }
 
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
@@ -48,33 +52,47 @@ const getMultiElement = (selector: string): NodeListOf<Element> => {
     return document.querySelectorAll(selector);
 };
 
-const listeningForChangesInTarget = (target: string | Element, action: ActionFunction, options?: MutationsOptions, valueOfConcern?: string, immediate?: boolean, triggerLimitation?: DelayOptions) => {
-    const { delay, way } = triggerLimitation || { way: 'none', delay: 0 };
-    const finalAction = way === 'debounce' ? debounce(action, delay) : way === 'throttle' ? throttle(action, delay) : action;
+const listenElementChanges = (target: string | Element, options: ListenOptions): MutationObserver | undefined => {
+    const { callback = () => {}, attributesConcern, childrenConcern = [], immediateImplementation = false, noTarget = false, triggerLimitation = { way: 'none', delay: 0 }, manualSetupOptions } = options;
+
+    const { delay, way } = triggerLimitation;
+    const finalAction = way === 'debounce' ? debounce(callback, delay) : way === 'throttle' ? throttle(callback, delay) : callback;
 
     const targetElement = target instanceof Element ? target : getElement(target);
     if (!targetElement) return;
 
-    if (immediate) {
-        valueOfConcern ? finalAction((targetElement as RealElement)[valueOfConcern]) : finalAction();
+    if (immediateImplementation) {
+        attributesConcern ? callback((targetElement as RealElement)[attributesConcern]) : callback();
     }
+    const children = childrenConcern.map(({ target, action }) => {
+        return {
+            target,
+            action: way === 'debounce' ? debounce(action, delay) : way === 'throttle' ? throttle(action, delay) : action,
+        };
+    });
 
     const targetObserver = new MutationObserver(mutations => {
-        const mutation = mutations.find(el => el.target === targetElement);
-        if (mutation) {
-            const element = mutation.target as RealElement;
-            if (valueOfConcern && valueOfConcern in element) {
-                finalAction(element[valueOfConcern]);
+        children.forEach(child => {
+            if (noTarget) {
+                child.action();
             } else {
-                finalAction();
+                const childMutation = mutations.find(el => el.target === getElement(child.target));
+                if (childMutation) child.action(childMutation.target);
             }
+        });
+
+        const attributesMutation = mutations.find(el => el.target === targetElement);
+        if (attributesMutation) {
+            const element = attributesMutation.target as RealElement;
+            attributesConcern && attributesConcern in element ? finalAction(element[attributesConcern]) : finalAction();
         }
     });
 
-    targetObserver.observe(targetElement, { childList: true, characterData: true, subtree: true, attributes: true, ...options });
+    targetObserver.observe(targetElement, { childList: childrenConcern.length > 0, attributes: !!attributesConcern, subtree: childrenConcern.length > 0, ...manualSetupOptions });
+    return targetObserver;
 };
 
-const waitForTargetFinishLoading = (target: string): Promise<Element> => {
+const waitElementFinishLoading = (target: string): Promise<Element> => {
     return new Promise(resolve => {
         const bodyObserver = new MutationObserver(_ => {
             const targetElement = getElement(target);
@@ -90,4 +108,4 @@ const waitForTargetFinishLoading = (target: string): Promise<Element> => {
     });
 };
 
-export { getElement, getMultiElement, listeningForChangesInTarget, waitForTargetFinishLoading, RealElement };
+export { getElement, getMultiElement, listenElementChanges, waitElementFinishLoading, RealElement };
